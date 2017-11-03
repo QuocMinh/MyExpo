@@ -1,6 +1,9 @@
 //import 
 import React, { Component } from 'react';
 import { Button } from 'react-native-elements';
+import Config from "../util/Config.js";
+import Validate from '../util/Validate.js';
+import ServerRequest from "../util/ServerRequest.js";
 import { 
     View, 
     StyleSheet,
@@ -8,64 +11,49 @@ import {
     Text,
     TextInput,
     Dimensions,
-    Alert
+    Alert,
+    Picker
 } from 'react-native';
 
 const { height, width } = Dimensions.get("window");
-
+const Item = Picker.Item;
+const servicesValue = [
+    { serviceCode: 'cskh', serviceName: 'Cham soc khach hang' },
+    { serviceCode: 'dkdv', serviceName: 'Dang ky dich vu' },
+    { serviceCode: 'tthd', serviceName: 'Thanh toan hoa don' },
+    { serviceCode: 'dntb', serviceName: 'Cham soc khach hang' },
+];
 
 class Registry extends Component {
     constructor(props) {
         super(props);
         this.state = {
             phoneInput: "",
-            serviceInput: ""
+            selected: "cskh",
         }
-    }
-
-    isPhoneFormat(sdt) {
-        var phone = sdt.trim();
-        phone = phone.replace('(+84)', '0');
-        phone = phone.replace('+84', '0');
-        phone = phone.replace('0084', '0');
-        phone = phone.replace(/ /g, '');
-        var flag = false;
-
-        if (phone != '') {
-            var firstNumber = phone.substring(0, 2);
-            if ((firstNumber == '09' || firstNumber == '08') && phone.length == 10) {
-                if (phone.match(/^\d{10}/)) {
-                    flag = true;
-                }
-            } else if (firstNumber == '01' && phone.length == 11) {
-                if (phone.match(/^\d{11}/)) {
-                    flag = true;
-                }
-            }
-        }
-
-        return flag;
     }
 
     registry() {
         var formData = new FormData();
         formData.append('sdt', this.state.phoneInput);
-        formData.append('macv', this.state.serviceInput);
+        formData.append('macv', this.state.selected);
 
-        if (this.isPhoneFormat(this.state.phoneInput)) {
-            fetch('http://10.151.124.85:8080/api/book/new', {
+        if (Validate.isPhoneFormat(this.state.phoneInput)) {
+            fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_NEW_CUSTOMER, {
                 method: 'POST',
                 body: formData
             })
-                .then((response) => {
-                    if (response._bodyText == 'OK!') {
-                        Alert.alert('Đặt số thành công');
+                .then((response) => response.json())
+                .then((responseJson) => {
+                    console.log(responseJson);
 
-                        // Set null Text input
-                        this.setState({ phoneInput: "", serviceInput: "" })
-                    } else {
-                        Alert.alert('LỖI!', 'Đã có lỗi xảy ra. Vui lòng thực hiện lại!');
-                    }
+                    Alert.alert(
+                        "Đặt số thành công!",
+                        `KHÁCH HÀNG: ${responseJson.sdt}\n\n-> STT: ${responseJson.stt}\n-> QUẦY SỐ: ${responseJson.soquay}` 
+                    );
+
+                    // Set null Text input
+                    this.setState({ phoneInput: '', selected: 'cskh' })
                 })
                 .catch((err) => {
                     Alert.alert("LỖI!", "Vui lòng kiểm tra lại cấu hình Server. " + err);
@@ -74,19 +62,14 @@ class Registry extends Component {
         } else {
             Alert.alert("LỖI!", 'Vui lòng kiểm tra lại số điện thoại');
         }
-
-        // Cap nhat thong tin quay 
-        this.updateHelpdesk();
-    }
-
-    updateHelpdesk() {
-        // Do something ... 
     }
 
     render() {
         return (
             <View style={styles.container}>
-                <Text style={{ color: "#0084EB", textAlign: "center", marginVertical: 15, fontSize: 24 }}>ĐĂNG KÝ THÔNG TIN</Text>
+                <View style={styles.vHeader}>
+                    <Text style={{ color: "white", textAlign: "center", fontSize: 20 }}>ĐĂNG KÝ THÔNG TIN</Text>
+                </View>
                 <View style={styles.vInputControl}>
                     <View style={styles.vInputName}>
                         <Text style={styles.InputName}>Số điện thoại:</Text>
@@ -97,8 +80,9 @@ class Registry extends Component {
                             value={this.state.phoneInput}
                             style={{ textAlign: "center", color: "#333", fontSize: 18 }}
                             keyboardType='phone-pad'
-                            underlineColorAndroid="#eee"
+                            underlineColorAndroid="#ddd"
                             placeholder="Nhập số điện thoại"
+                            returnKeyType="next"
                         />
                     </View>
                 </View>
@@ -106,18 +90,25 @@ class Registry extends Component {
                     <View style={styles.vInputName}>
                         <Text style={styles.InputName}>Dịch vụ:</Text>
                     </View>
-                    <View style={styles.vInput}>
-                        <TextInput
-                            onChangeText={(value) => this.setState({ serviceInput: value })}
-                            value={this.state.serviceInput}
-                            style={{ textAlign: "center", color: "#333", fontSize: 18 }}
-                            underlineColorAndroid="#eee"
-                            placeholder="Nhập mã dịch vụ"
-                        />
+                    <View style={styles.vPicker}>
+                        <Picker
+                            mode='dropdown'
+                            selectedValue={this.state.selected}
+                            onValueChange={(value) => this.setState({ selected: value })}
+                        >
+                            {
+                                servicesValue.map(
+                                    (service) => {
+                                        console.log('<Item value=' + service.serviceCode + ' label=' + service.serviceName + ' />');
+                                        return <Item value={service.serviceCode} label={service.serviceName} key={service.serviceCode} />
+                                    }
+                                )
+                            }
+                        </Picker>
                     </View>
                 </View>
                 <Button
-                    large
+                    small
                     title="ĐĂNG KÝ"
                     buttonStyle={ styles.btnDangKy }
                     onPress={() => this.registry()}
@@ -130,30 +121,34 @@ class Registry extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        marginVertical: 10
+        paddingBottom: 10,
+        backgroundColor: '#EFEFEF'
+    },
+    vHeader: {
+        backgroundColor: '#0063B0',
+        paddingVertical: 8,
+        marginBottom: 10
     },
     btnDangKy: {
         backgroundColor: "#0084EB",
-        ...Platform.select({
-            ios: () => { marginTop: 8 },
-        }),
         marginVertical: 10,
-        borderRadius: 8
     },
     vInputControl: {
         flex: 1,
         flexDirection: "row",
-        backgroundColor: "#eee",
+        backgroundColor: "#ddd",
         marginTop: 10,
         marginHorizontal: 15,
         height: 50,
-        paddingHorizontal: 10,
-        borderRadius: 8,
+        paddingHorizontal: 15,
         alignItems: "center"
     },
     vInput: {
         flex: 0.6,
         marginHorizontal: 8
+    },
+    vPicker: {
+        flex: 0.6,
     },
     vInputName: {
         flex: 0.4

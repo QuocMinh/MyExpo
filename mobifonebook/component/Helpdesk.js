@@ -1,32 +1,35 @@
-//import liraries
 import React, { Component } from 'react';
+import { Icon } from 'react-native-elements';
 import { 
     View, 
     Text, 
     StyleSheet,
     Dimensions,
-    ListView
+    ListView,
+    RefreshControl,
+    TouchableOpacity
 } from 'react-native';
 
 import Box from './Box.js';
+import Config from "../util/Config.js";
 
-const { height, width } = Dimensions.get("window");
-const dataArray = [
-    { soquay: '1', stt: '1', trangthai: '0' },
-    { soquay: '2', stt: '2', trangthai: '0' },
-    { soquay: '3', stt: '3', trangthai: '0' },
-    { soquay: '4', stt: '4', trangthai: '0' },
-    { soquay: '5', stt: '5', trangthai: '0' },
-    { soquay: '6', stt: '6', trangthai: '0' },
+const { width } = Dimensions.get("window");
+var dataArray = [
+    { soquay: '1', stt: '1', trangthai: 1, soluong: '0' },
+    { soquay: '2', stt: '2', trangthai: 2, soluong: '0' },
+    { soquay: '3', stt: '3', trangthai: 1, soluong: '0' },
+    { soquay: '4', stt: '4', trangthai: 1, soluong: '0' },
+    { soquay: '5', stt: '5', trangthai: 1, soluong: '0' },
+    { soquay: '6', stt: '6', trangthai: 0, soluong: '0' },
 ]
 
-// create a component
 class Helpdesk extends Component {
     constructor(props) {
         super(props);
         const ds = new ListView.DataSource({ rowHasChanged: (r1,r2) => r1 !== r2});
         this.state = {
-            dataSource: ds.cloneWithRows(dataArray)
+            dataSource: ds.cloneWithRows(dataArray),
+            refreshing: true
         }
     }
 
@@ -34,7 +37,21 @@ class Helpdesk extends Component {
         return (
             <View style={styles.container}>
                 <View style={styles.vTitle}>
-                    <Text style={styles.title}>TRẠNG THÁI QUẦY</Text>
+                    <View style={styles.vTitleText}>
+                        <Text style={styles.title}>TRẠNG THÁI QUẦY</Text>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.vTitleIcon}
+                        onPress={() => {
+                            this.setState({ refreshing: true });
+                            this.loadHelpdesk();
+                        }}
+                    >
+                        <Icon
+                            color="white"
+                            name="refresh"
+                        />
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.vList}>
                     <ListView
@@ -44,9 +61,17 @@ class Helpdesk extends Component {
                                 soquay={r.soquay}
                                 stt={r.stt}
                                 trangthai={r.trangthai}
+                                soluong={r.soluong}
                             />
                         }
                         contentContainerStyle={{ flexDirection: "row", flexWrap: "wrap" }}
+                        enableEmptySections
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={this.state.refreshing}
+                                onRefresh={() => { this.loadHelpdesk() }}
+                            />
+                        }
                     />
                 </View>
             </View>
@@ -54,21 +79,27 @@ class Helpdesk extends Component {
     }
 
     loadHelpdesk() {
-        fetch("http://10.151.124.85:8080/api/book/get")
+        fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_GET_HELPDESK)
             .then((response) => response.json())
             .then((responseJson) => {
-                dataArray = [];
+                console.log(responseJson.length);
+                if (responseJson.length > 0) {
+                    dataArray = [];
+                }
                 dataArray = dataArray.concat(responseJson);
                 this.setState({
                     dataSource: this.state.dataSource.cloneWithRows(dataArray),
+                    refreshing: false
                 });
             })
             .catch(err => {
-                Alert.alert(
-                    "LỖI!",
-                    err
-                )
+                console.log(err)
+                this.setState({
+                    refreshing: false
+                });
             });
+        
+        console.log('-- load helpdesk');
     }
 
     componentDidMount() {
@@ -76,20 +107,34 @@ class Helpdesk extends Component {
     }
 }
 
-// define your styles
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow: 1,
         alignItems: 'center',
         backgroundColor: '#CCE0EF',
-        height: 300
     },
     vTitle: {
         backgroundColor: "#0063B0",
         height: 40,
         width: width,
+        flexDirection: 'row',
+        shadowColor: '#111',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.8,
+        shadowRadius: 3,
+    },
+    vTitleText: {
+        flex: 1,
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
+        paddingLeft: (width / 9) + 5
+    },
+    vTitleIcon: {
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: '#3480BF',
+        width: width / 9,
+        marginRight: 5
     },
     title: {
         color: "white",
@@ -99,9 +144,8 @@ const styles = StyleSheet.create({
         flex: 1,
         width: width,
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
     },
 });
 
-//make this component available to the app
 export default Helpdesk;

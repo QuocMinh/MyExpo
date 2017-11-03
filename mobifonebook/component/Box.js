@@ -1,6 +1,10 @@
 //import liraries
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { Asset, Audio, Constants } from 'expo';
+import Color from "../util/Color.js";
+
+const { height, width } = Dimensions.get('window');
 
 // create a component
 class Box extends Component {
@@ -9,60 +13,61 @@ class Box extends Component {
     }
 
     render() {
+        console.log("STT: " + this.props.stt + " - TRANGTHAI: " + typeof this.props.trangthai);
+
         if(this.props.trangthai === 0) {
             return (
-                <TouchableOpacity onPress={() => this.docSo()}>
-                    <View style={[styles.vBox, { backgroundColor: "#8CCBF9", borderColor: "#3FA9F5"}]}>
+                <TouchableOpacity>
+                    <View style={[styles.vBox, { backgroundColor: Color.HELPDESK_WAIT, borderColor: "#3FA9F5"}]}>
                         <Text style={{ fontSize: 18, marginBottom: 5, color: "#00579c", fontWeight: "bold" }}>QUẦY {this.props.soquay}</Text>
-                        <Text style={styles.stt}>{this.props.stt}</Text>
+                        <Text style={styles.stt}>STT: {this.props.stt}</Text>
+                        <Text>Còn lại: {this.props.soluong}</Text>
                     </View>
                 </TouchableOpacity>
             );
         } else if (this.props.trangthai === 1) {
             return (
-                <View style={[styles.vBox, { backgroundColor: "#FFBE78", borderColor: "#FF931E" }]}>
+                <View style={[styles.vBox, { backgroundColor: Color.HELPDESK_HANDLING, borderColor: "#FF931E" }]}>
                     <Text style={{ fontSize: 18, marginBottom: 5, color: "#00579c", fontWeight: "bold" }}>QUẦY {this.props.soquay}</Text>
-                    <Text style={styles.stt}>{this.props.stt}</Text>
+                    <Text style={styles.stt}>STT: {this.props.stt}</Text>
+                    <Text>Còn lại: {this.props.soluong}</Text>
                 </View>
             );
         } else {
             return (
-                <View style={[styles.vBox, { backgroundColor: "#AFDF8E", borderColor: "#7AC943" }]}>
+                <View style={[styles.vBox, { backgroundColor: Color.HELPDESK_COMPLETE, borderColor: "#7AC943" }]}>
                     <Text style={{ fontSize: 18, marginBottom: 5, color: "#00579c", fontWeight: "bold" }}>QUẦY {this.props.soquay}</Text>
-                    <Text style={styles.stt}>{this.props.stt}</Text>
+                    <Text style={styles.stt}>STT: {this.props.stt}</Text>
+                    <Text>Còn lại: {this.props.soluong}</Text>
                 </View>
             );
         }
     }
 
-    docSo() {
-        Alert.alert("OUT: ", this.props.soquay + " " + this.props);
-    }
 }
 
 // define your styles
 const styles = StyleSheet.create({
     vBox: {
-        height: 105,
-        width: 105,
+        height: width / 3.37,
+        width: width / 3.37,
         marginLeft: 10,
         marginTop: 10,
-        borderRadius: 8,
         borderWidth: 2,
         justifyContent: "center",
         alignItems: "center"
     },
     stt: {
-        width: 30,
-        height: 30,
         borderWidth: 1,
-        borderRadius: 15,
+        borderRadius: 20,
         borderColor: '#00579c',
         textAlign: 'center',
         color: 'white',
         backgroundColor: '#00579c',
-        paddingTop: 4,
-        fontSize: 16,
+        paddingVertical: 2,
+        paddingHorizontal: 8,
+        fontSize: 15,
+        marginBottom: 5
     }
 });
 
