@@ -52,7 +52,7 @@ class BookForm extends Component {
     // ------------------- Chua Test ---------------------------
     booking() {
         var formData = new FormData();
-        formData.append('sdt', this.state.sdt);
+        formData.append('sdt',  this.state.sdt);
         formData.append('macv', this.state.macv);
 
         if(this.isPhoneFormat(this.state.sdt)) {

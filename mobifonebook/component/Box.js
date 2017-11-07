@@ -1,52 +1,54 @@
-//import liraries
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { Asset, Audio, Constants } from 'expo';
-import Color from "../util/Color.js";
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Toa } from 'react-native';
+
+import Color    from "../util/Color.js";
+import Config   from "../util/Config.js";
 
 const { height, width } = Dimensions.get('window');
 
-// create a component
 class Box extends Component {
     constructor(props) {
         super(props);
     }
 
     render() {
-        console.log("STT: " + this.props.stt + " - TRANGTHAI: " + typeof this.props.trangthai);
+        console.log("BOX - ID: "        + this.props.id);
+        console.log("BOX - SOQUAY: "    + this.props.soquay);
+        console.log("BOX - STT: "       + this.props.stt);
+        console.log("BOX - TRANGTHAI: " + this.props.trangthai);
 
+        return (
+            // <TouchableOpacity
+            //     onLongPress={() => this.updateStatus()}
+            // >
+                <View style={[styles.vBox, this.colorStatus()]}>
+                    <Text style={{ fontSize: 18, marginBottom: 5, color: "#00579c", fontWeight: "bold" }}>QUẦY {this.props.soquay}</Text>
+                    <Text style={styles.stt}>STT: {this.props.stt}</Text>
+                    <Text>{this.checkStatus()}</Text>
+                </View>
+            // </TouchableOpacity>
+        );
+    }
+
+    updateStatus() {
         if(this.props.trangthai === 0) {
-            return (
-                <TouchableOpacity>
-                    <View style={[styles.vBox, { backgroundColor: Color.HELPDESK_WAIT, borderColor: "#3FA9F5"}]}>
-                        <Text style={{ fontSize: 18, marginBottom: 5, color: "#00579c", fontWeight: "bold" }}>QUẦY {this.props.soquay}</Text>
-                        <Text style={styles.stt}>STT: {this.props.stt}</Text>
-                        <Text>Còn lại: {this.props.soluong}</Text>
-                    </View>
-                </TouchableOpacity>
-            );
-        } else if (this.props.trangthai === 1) {
-            return (
-                <View style={[styles.vBox, { backgroundColor: Color.HELPDESK_HANDLING, borderColor: "#FF931E" }]}>
-                    <Text style={{ fontSize: 18, marginBottom: 5, color: "#00579c", fontWeight: "bold" }}>QUẦY {this.props.soquay}</Text>
-                    <Text style={styles.stt}>STT: {this.props.stt}</Text>
-                    <Text>Còn lại: {this.props.soluong}</Text>
-                </View>
-            );
-        } else {
-            return (
-                <View style={[styles.vBox, { backgroundColor: Color.HELPDESK_COMPLETE, borderColor: "#7AC943" }]}>
-                    <Text style={{ fontSize: 18, marginBottom: 5, color: "#00579c", fontWeight: "bold" }}>QUẦY {this.props.soquay}</Text>
-                    <Text style={styles.stt}>STT: {this.props.stt}</Text>
-                    <Text>Còn lại: {this.props.soluong}</Text>
-                </View>
-            );
+            console.log(console.log("BOX - UPDATE_STATUS !!"));
+            this.props.updateHelpdeskStatus(this.props.id, this.props.soquay);
         }
+    }
+
+    checkStatus() {
+        return this.props.trangthai === 1 ? "Đang xử lý" : "Đang chờ ...";
+    }
+
+    colorStatus() {
+        return this.props.trangthai === 1 ? 
+            { backgroundColor: Color.HELPDESK_HANDLING, borderColor: "#FF931E" } :
+            { backgroundColor: Color.HELPDESK_WAIT,     borderColor: "#3FA9F5" }
     }
 
 }
 
-// define your styles
 const styles = StyleSheet.create({
     vBox: {
         height: width / 3.37,
@@ -71,5 +73,25 @@ const styles = StyleSheet.create({
     }
 });
 
-//make this component available to the app
 export default Box;
+
+
+// loadCustomer() {
+//     fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_GET_CUSTOMER_BY_HELPDESDK + this.state.soquay)
+//         .then((response) => response.json())
+//         .then((responseJson) => {
+//             console.log("LOAD CUSTOMER");
+//             console.log(responseJson);
+//             this.setState({
+//                 customer: responseJson
+//             });
+//         })
+//         .catch(err => {
+//             console.log(err);
+//         });
+//     console.log('-- load customer');
+// }
+
+// componentDidMount() {
+//     // this.loadCustomer();
+// }

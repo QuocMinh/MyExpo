@@ -21,7 +21,7 @@ module.exports = {
 
                     Alert.alert(
                         "Đặt số thành công!",
-                        `KHÁCH HÀNG: ${responseJson.sdt}\n\n-> STT: ${responseJson.stt}\n-> QUẦY SỐ: ${responseJson.soquay}`
+                        `KHÁCH HÀNG: ${responseJson.sdt}\n\n-> STT: ${responseJson.stt}\n`
                     );
 
                     return true;
@@ -35,5 +35,25 @@ module.exports = {
         }
 
         return false;
+    },
+
+    // Dang lam
+    loadCustomer() {
+        var customer;
+
+        fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_GET_CUSTOMER_BY_HELPDESDK + this.props.soquay)
+            .then((response) => response.json())
+            .then((responseJson) => {
+                console.log("LOAD CUSTOMER");
+                console.log(responseJson);
+                customer = responseJson;
+            })
+            .catch(err => {
+                console.log(err);
+            });
+
+        console.log('-- load customer');
+
+        return customer;
     }
 }

@@ -10,17 +10,17 @@ import {
     TouchableOpacity
 } from 'react-native';
 
-import Box      from './Box.js';
-import Config   from "../util/Config.js";
+import Box from './Box.js';
+import Config from "../util/Config.js";
 
 const { width } = Dimensions.get("window");
 var dataArray = [
-    { soquay: 1, trangthai: 0 },
-    { soquay: 2, trangthai: 0 },
-    { soquay: 3, trangthai: 0 },
-    { soquay: 4, trangthai: 0 },
-    { soquay: 5, trangthai: 0 },
-    { soquay: 6, trangthai: 0 }
+    { soquay: '1', stt: '1', trangthai: 1, soluong: '0' },
+    { soquay: '2', stt: '2', trangthai: 2, soluong: '0' },
+    { soquay: '3', stt: '3', trangthai: 1, soluong: '0' },
+    { soquay: '4', stt: '4', trangthai: 1, soluong: '0' },
+    { soquay: '5', stt: '5', trangthai: 1, soluong: '0' },
+    { soquay: '6', stt: '6', trangthai: 0, soluong: '0' },
 ]
 
 class Helpdesk extends Component {
@@ -29,7 +29,7 @@ class Helpdesk extends Component {
         const ds = new ListView.DataSource({ rowHasChanged: (r1,r2) => r1 !== r2});
         this.state = {
             dataSource: ds.cloneWithRows(dataArray),
-            refreshing: true,
+            refreshing: true
         }
     }
 
@@ -47,16 +47,22 @@ class Helpdesk extends Component {
                             this.loadHelpdesk();
                         }}
                     >
-                        <Icon color="white" name="refresh" />
+                        <Icon
+                            color="white"
+                            name="refresh"
+                        />
                     </TouchableOpacity>
                 </View>
                 <View style={styles.vList}>
                     <ListView
                         dataSource={this.state.dataSource}
                         renderRow={ (r) =>
-                            <TouchableOpacity onLongPress={() => { this.updateHelpdeskStatus(r.id, r.soquay) }} >
-                                <Box soquay={r.soquay} trangthai={r.trangthai} stt={r.stt} id={r.id} updateHelpdeskStatus={this.updateHelpdeskStatus} />
-                            </TouchableOpacity>
+                            <Box 
+                                soquay={r.soquay}
+                                stt={r.stt}
+                                trangthai={r.trangthai}
+                                soluong={r.soluong}
+                            />
                         }
                         contentContainerStyle={{ flexDirection: "row", flexWrap: "wrap" }}
                         enableEmptySections
@@ -72,47 +78,18 @@ class Helpdesk extends Component {
         );
     }
 
-    updateHelpdeskStatus(id, soquay) {
-        console.log(console.log("HELPDESK - UPDATE_HELPDESK_STATUS !!"));
-
-        var formData = new FormData();
-        formData.append('id', id);
-        formData.append('soquay', soquay);
-        formData.append('trangthai', 1);
-
-        fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_UPDATE_HELPDESK_STATUS, {
-            method: "POST",
-            body: formData
-        })
-            .then((response) => {
-                console.log(response.json);
-                if (response._bodyText == 'OK!') {
-                    // Reload Heldesk
-                    this.loadHelpdesk();
-                } else {
-                    console.log("HELPDESK - UPDATE_HELPDESK_STATUS - FAILED!");
-                    console.log(response);
-                }
-            })
-            .catch((err) => console.log(err));
-    }
-
     loadHelpdesk() {
-        console.log('-- load helpdesk');
-        fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_GET_HELPDESK_AND_CUSTOMER)
+        fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_GET_HELPDESK)
             .then((response) => response.json())
             .then((responseJson) => {
-                console.log(responseJson);
+                console.log(responseJson.length);
                 if (responseJson.length > 0) {
                     dataArray = [];
-                    console.log("OK!");
                 }
                 dataArray = dataArray.concat(responseJson);
-                console.log("HELPDESK - DATA ARRAY: ");
-                console.log(dataArray);
                 this.setState({
                     dataSource: this.state.dataSource.cloneWithRows(dataArray),
-                    refreshing: false,
+                    refreshing: false
                 });
             })
             .catch(err => {
@@ -121,6 +98,8 @@ class Helpdesk extends Component {
                     refreshing: false
                 });
             });
+        
+        console.log('-- load helpdesk');
     }
 
     componentDidMount() {
