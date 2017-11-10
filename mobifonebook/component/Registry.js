@@ -1,9 +1,6 @@
 //import 
 import React, { Component } from 'react';
 import { Button } from 'react-native-elements';
-import Config from "../util/Config.js";
-import Validate from '../util/Validate.js';
-import ServerRequest from "../util/ServerRequest.js";
 import { 
     View, 
     StyleSheet,
@@ -15,13 +12,18 @@ import {
     Picker
 } from 'react-native';
 
+import Config           from "../util/Config.js";
+import Validate         from '../util/Validate.js';
+import ServerRequest    from "../util/ServerRequest.js";
+
 const { height, width } = Dimensions.get("window");
 const Item = Picker.Item;
 const servicesValue = [
-    { serviceCode: 'cskh', serviceName: 'Cham soc khach hang' },
-    { serviceCode: 'dkdv', serviceName: 'Dang ky dich vu' },
-    { serviceCode: 'tthd', serviceName: 'Thanh toan hoa don' },
-    { serviceCode: 'dntb', serviceName: 'Cham soc khach hang' },
+    { serviceCode: 'cskh', serviceName: 'Chăm sóc khách hàng'   },
+    { serviceCode: 'dkdv', serviceName: 'Đăng ký dịch vụ'       },
+    { serviceCode: 'tthd', serviceName: 'Thanh toán hóa đơn'    },
+    { serviceCode: 'dntb', serviceName: 'Đấu nối thuê bao'      },
+    { serviceCode: 'htkt', serviceName: 'Hỗ trợ kỷ thuật'       },
 ];
 
 class Registry extends Component {
@@ -96,10 +98,10 @@ class Registry extends Component {
                             selectedValue={this.state.selected}
                             onValueChange={(value) => this.setState({ selected: value })}
                         >
-                            {
+                            { /* Dung map() render ra cac Item dich vu */
                                 servicesValue.map(
                                     (service) => {
-                                        console.log('<Item value=' + service.serviceCode + ' label=' + service.serviceName + ' />');
+                                        // console.log('<Item value=' + service.serviceCode + ' label=' + service.serviceName + ' />');
                                         return <Item value={service.serviceCode} label={service.serviceName} key={service.serviceCode} />
                                     }
                                 )

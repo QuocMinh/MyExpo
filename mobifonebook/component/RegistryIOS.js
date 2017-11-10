@@ -16,10 +16,11 @@ import {
 
 const { height, width } = Dimensions.get("window");
 const servicesValue = [
-    { macv: 'dntb', mota: 'Đấu nối thuê bao' },
-    { macv: 'dkdv', mota: 'Đăng ký dịch vụ' },
-    { macv: 'tthd', mota: 'Thanh toán hóa đơn' },
+    { macv: 'dntb', mota: 'Đấu nối thuê bao'    },
+    { macv: 'dkdv', mota: 'Đăng ký dịch vụ'     },
+    { macv: 'tthd', mota: 'Thanh toán hóa đơn'  },
     { macv: 'cskh', mota: 'Chăm sóc khách hàng' },
+    { macv: 'htkt', mota: 'Hỗ trợ kỷ thuật'     },
 ];
 const Item = PickerIOS.Item;
 
@@ -142,7 +143,7 @@ class RegistryIOS extends Component {
                             selectedValue={this.state.selected}
                             onValueChange={(value) => this.setState({ selected: value })}
                         >
-                            {
+                            { /* Dung map() render ra cac Item dich vu */
                                 servicesValue.map(
                                     (service) => {
                                         return <Item value={service.macv} label={service.mota} key={service.macv} />
