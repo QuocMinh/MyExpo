@@ -33,6 +33,7 @@ class Helpdesk extends Component {
         this.state = {
             dataSource: ds.cloneWithRows(dataArray),
             refreshing: true,
+            isAudioPlaying: false
         }
     }
 
@@ -86,42 +87,54 @@ class Helpdesk extends Component {
 
     playSound = async(stt, soquay) => {
         console.log("---- PLAY SOUND !!");
-        if(stt > 0) {
-            var sound1      = new Audio.Sound();
-            var sound2      = new Audio.Sound();
-            var soundStt    = new Audio.Sound();
-            var soundQuay   = new Audio.Sound();
+        var isAudioPlaying = this.state.isAudioPlaying;
 
-            try {
-                // Play sound 1
-                await sound1    .loadAsync(require("../assets/sounds/read-1.mp3"));
-                await sound2    .loadAsync(require("../assets/sounds/read-2.mp3"));
-                await soundStt  .loadAsync(AudioLink[stt - 1]);
-                await soundQuay .loadAsync(AudioLink[soquay - 1]);
+        if(isAudioPlaying === false) {
 
-                await sound1.playAsync();
-                setTimeout(async() =>  { await soundStt   .playAsync(); }, 1850);
-                setTimeout(async() =>  { await sound2     .playAsync(); }, 2700);
-                setTimeout(async() =>  { await soundQuay  .playAsync(); }, 3700);
+            this.setState({ isAudioPlaying: true });
 
-                console.log("Phai play chu!!!!!");
-            } catch (error) {
-                console.log("ERROR: ");
-                console.log(error);
+            if(stt > 0) {
+                var sound1      = new Audio.Sound();
+                var sound2      = new Audio.Sound();
+                var soundStt    = new Audio.Sound();
+                var soundQuay   = new Audio.Sound();
+
+                try {
+                    // Play sound 1
+                    await sound1    .loadAsync(require("../assets/sounds/read-1.mp3"));
+                    await sound2    .loadAsync(require("../assets/sounds/read-2.mp3"));
+                    await soundStt  .loadAsync(AudioLink[stt - 1]);
+                    await soundQuay .loadAsync(AudioLink[soquay - 1]);
+
+                    await sound1.playAsync();
+                    setTimeout(async () =>  { await soundStt   .playAsync(); }, 1850);
+                    setTimeout(async () =>  { await sound2     .playAsync(); }, 2700);
+                    setTimeout(async () =>  { await soundQuay  .playAsync(); }, 3700);
+                    setTimeout(async () =>  { await this.setState({ isAudioPlaying: false }); }, 3700);
+
+                    await console.log("Sound played");
+                } catch (error) {
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+            } else {
+                var soundDefault = new Audio.Sound();
+                try {
+                    // Play sound 1
+                    await soundDefault.loadAsync(require("../assets/sounds/default-voice.mp3"));
+                    await soundDefault.playAsync();
+
+                    setTimeout(async () => { await this.setState({ isAudioPlaying: false }); }, 3000);
+
+                    await console.log("Sound played");
+                } catch (error) {
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+
+                console.log("Khong hop le!");
             }
-        } else {
-            var soundDefault = new Audio.Sound();
-            try {
-                // Play sound 1
-                await soundDefault.loadAsync(require("../assets/sounds/default-voice.mp3"));
-                await soundDefault.playAsync();
-            } catch (error) {
-                console.log("ERROR: ");
-                console.log(error);
-            }
-            console.log("Khong hop le!");
         }
-        
     }
 
     updateHelpdeskStatus(id, soquay) {
