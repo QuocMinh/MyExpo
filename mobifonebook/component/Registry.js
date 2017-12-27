@@ -14,7 +14,8 @@ import {
 
 import Config           from "../util/Config.js";
 import Validate         from '../util/Validate.js';
-import ServerRequest    from "../util/ServerRequest.js";
+import ServerRequest    from "../util/ServerRequest";
+import { NewBooking }   from "../util/Booking";
 
 const { height, width } = Dimensions.get("window");
 const Item = Picker.Item;
@@ -36,30 +37,35 @@ class Registry extends Component {
     }
 
     registry() {
-        var formData = new FormData();
-        formData.append('sdt', this.state.phoneInput);
-        formData.append('macv', this.state.selected);
-
         if (Validate.isPhoneFormat(this.state.phoneInput)) {
             fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_NEW_CUSTOMER, {
                 method: 'POST',
-                body: formData
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: NewBooking(this.state.phoneInput, this.state.selected)
             })
-                .then((response) => response.json())
-                .then((responseJson) => {
-                    console.log(responseJson);
+                .then(response => {
+                    console.log("===== registry", response);
 
-                    Alert.alert(
-                        "Đặt số thành công!",
-                        `KHÁCH HÀNG: ${responseJson.sdt}\n\n-> STT: ${responseJson.stt}\n-> QUẦY SỐ: ${responseJson.soquay}` 
-                    );
+                    if (response._bodyText === '"booked"') {
+                        Alert.alert(
+                            "Đặt số Không thành công!",
+                            `Khách hàng này đã đặt số trước đó không lâu.`
+                        );
+                    } else {
+                        let responseText = JSON.parse(response._bodyText);
+                        let responseJson = JSON.parse(responseText);
 
-                    // Set null Text input
-                    this.setState({ phoneInput: '', selected: 'cskh' })
-                })
+                        Alert.alert(
+                            "Đặt số thành công!",
+                            `KHÁCH HÀNG: ${responseJson.sdt}\n\n-> STT: ${responseJson.stt}\n`
+                        );
+                    } 
+                }) 
                 .catch((err) => {
-                    Alert.alert("LỖI!", "Vui lòng kiểm tra lại cấu hình Server. " + err);
-                    console.log(err);
+                    Alert.alert("LỖI!", err);
                 })
         } else {
             Alert.alert("LỖI!", 'Vui lòng kiểm tra lại số điện thoại');

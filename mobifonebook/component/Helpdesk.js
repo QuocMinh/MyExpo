@@ -14,6 +14,7 @@ import { Audio } from "expo";
 import Box       from './Box.js';
 import Config    from "../util/Config.js";
 import AudioLink from "../util/AudioLink.js";
+import { UpdateHelpdeskStatus } from "../util/Booking";
 
 const { width } = Dimensions.get("window");
 
@@ -59,13 +60,13 @@ class Helpdesk extends Component {
                         dataSource={this.state.dataSource}
                         renderRow={ (r) =>
                             <TouchableOpacity 
-                                onLongPress={() => { this.updateHelpdeskStatus(r.id, r.soquay) }}
-                                onPress={() => this.playSound(r.stt, r.soquay)}
+                                onLongPress={() => { this.updateHelpdeskStatus(r.bookeId, r.soquay) }}
+                                onPress={() => this.playSound(r.bookedStt, r.soquay)}
                             >
                                 <Box 
                                     soquay={r.soquay} 
-                                    trangthai={r.trangthai} 
-                                    stt={r.stt} 
+                                    trangthai={r.bookedTrangThai} 
+                                    stt={r.bookedStt} 
                                     id={r.id} 
                                     updateHelpdeskStatus={this.updateHelpdeskStatus}
                                 />
@@ -139,19 +140,20 @@ class Helpdesk extends Component {
 
     updateHelpdeskStatus(id, soquay) {
         console.log(console.log("HELPDESK - UPDATE_HELPDESK_STATUS !!"));
-
-        var formData = new FormData();
-        formData.append('id', id);
-        formData.append('soquay', soquay);
-        formData.append('trangthai', 1);
+        console.log("-id",id);
+        console.log("-soquay",soquay);
 
         fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_UPDATE_HELPDESK_STATUS, {
             method: "POST",
-            body: formData
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: UpdateHelpdeskStatus(id, soquay, 1)
         })
             .then((response) => {
-                console.log(response.json);
-                if (response._bodyText == 'OK!') {
+                console.log("======== RESPONE", response._bodyText);
+                if (response._bodyText == '"OK"') {
                     // Reload Heldesk
                     this.loadHelpdesk();
                 } else {
@@ -164,7 +166,13 @@ class Helpdesk extends Component {
 
     loadHelpdesk() {
         console.log('-- load helpdesk');
-        fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_GET_HELPDESK_AND_CUSTOMER)
+        fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_GET_HELPDESK_AND_CUSTOMER, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        })
             .then((response) => response.json())
             .then((responseJson) => {
                 console.log(responseJson);

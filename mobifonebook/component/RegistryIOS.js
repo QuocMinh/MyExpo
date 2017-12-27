@@ -35,30 +35,49 @@ class RegistryIOS extends Component {
     }
 
     registry() {
-        var formData = new FormData();
-        formData.append('sdt', this.state.phoneInput);
-        formData.append('macv', this.state.selected);
-
         if (Validate.isPhoneFormat(this.state.phoneInput)) {
+            let formData =
+                `{
+                    "id": 1,
+                    "stt": 2,
+                    "trangthai": 3,
+                    "soquay": 4,
+                    "sdt": "${this.state.phoneInput}",
+                    "macv": "${this.state.selected}",
+                    "ngaybd": "sample string 7",
+                    "ngaykt": "sample string 8"
+                }`;
+
+            console.log(formData);
+
             fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_NEW_CUSTOMER, {
                 method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
                 body: formData
             })
-                .then((response) => response.json())
-                .then((responseJson) => {
-                    console.log(responseJson);
+                .then(response => {
+                    console.log("===== registry", response);
 
-                    Alert.alert(
-                        "Đặt số thành công!",
-                        `KHÁCH HÀNG: ${responseJson.sdt}\n\n-> STT: ${responseJson.stt}\n-> QUẦY SỐ: ${responseJson.soquay}`
-                    );
+                    if (response._bodyText === '"booked"') {
+                        Alert.alert(
+                            "Đặt số Không thành công!",
+                            `Khách hàng này đã đặt số trước đó không lâu.`
+                        );
+                    } else {
+                        let responseText = JSON.parse(response._bodyText);
+                        let responseJson = JSON.parse(responseText);
 
-                    // Set null Text input
-                    this.setState({ phoneInput: '', selected: 'cskh' })
+                        Alert.alert(
+                            "Đặt số thành công!",
+                            `KHÁCH HÀNG: ${responseJson.sdt}\n\n-> STT: ${responseJson.stt}\n`
+                        );
+                    }
                 })
                 .catch((err) => {
-                    Alert.alert("LỖI!", "Vui lòng kiểm tra lại cấu hình Server. " + err);
-                    console.log(err);
+                    Alert.alert("LỖI!", err);
                 })
         } else {
             Alert.alert("LỖI!", 'Vui lòng kiểm tra lại số điện thoại');
