@@ -9,11 +9,15 @@ import {
     RefreshControl,
     TouchableOpacity
 } from 'react-native';
+import { Audio } from "expo";
 
-import Box      from './Box.js';
-import Config   from "../util/Config.js";
+import Box       from './Box.js';
+import Config    from "../util/Config.js";
+import AudioLink from "../util/AudioLink.js";
+import { UpdateHelpdeskStatus } from "../util/Booking";
 
 const { width } = Dimensions.get("window");
+
 var dataArray = [
     { soquay: 1, trangthai: 0 },
     { soquay: 2, trangthai: 0 },
@@ -21,7 +25,7 @@ var dataArray = [
     { soquay: 4, trangthai: 0 },
     { soquay: 5, trangthai: 0 },
     { soquay: 6, trangthai: 0 }
-]
+];
 
 class Helpdesk extends Component {
     constructor(props) {
@@ -30,6 +34,7 @@ class Helpdesk extends Component {
         this.state = {
             dataSource: ds.cloneWithRows(dataArray),
             refreshing: true,
+            isAudioPlaying: false
         }
     }
 
@@ -54,8 +59,17 @@ class Helpdesk extends Component {
                     <ListView
                         dataSource={this.state.dataSource}
                         renderRow={ (r) =>
-                            <TouchableOpacity onLongPress={() => { this.updateHelpdeskStatus(r.id, r.soquay) }} >
-                                <Box soquay={r.soquay} trangthai={r.trangthai} stt={r.stt} id={r.id} updateHelpdeskStatus={this.updateHelpdeskStatus} />
+                            <TouchableOpacity 
+                                onLongPress={() => { this.updateHelpdeskStatus(r.bookeId, r.soquay) }}
+                                onPress={() => this.playSound(r.bookedStt, r.soquay)}
+                            >
+                                <Box 
+                                    soquay={r.soquay} 
+                                    trangthai={r.bookedTrangThai} 
+                                    stt={r.bookedStt} 
+                                    id={r.id} 
+                                    updateHelpdeskStatus={this.updateHelpdeskStatus}
+                                />
                             </TouchableOpacity>
                         }
                         contentContainerStyle={{ flexDirection: "row", flexWrap: "wrap" }}
@@ -72,21 +86,74 @@ class Helpdesk extends Component {
         );
     }
 
+    playSound = async(stt, soquay) => {
+        console.log("---- PLAY SOUND !!");
+        var isAudioPlaying = this.state.isAudioPlaying;
+
+        if(isAudioPlaying === false) {
+
+            this.setState({ isAudioPlaying: true });
+
+            if(stt > 0) {
+                var sound1      = new Audio.Sound();
+                var sound2      = new Audio.Sound();
+                var soundStt    = new Audio.Sound();
+                var soundQuay   = new Audio.Sound();
+
+                try {
+                    // Play sound 1
+                    await sound1    .loadAsync(require("../assets/sounds/read-1.mp3"));
+                    await sound2    .loadAsync(require("../assets/sounds/read-2.mp3"));
+                    await soundStt  .loadAsync(AudioLink[stt - 1]);
+                    await soundQuay .loadAsync(AudioLink[soquay - 1]);
+
+                    await sound1.playAsync();
+                    setTimeout(async () =>  { await soundStt   .playAsync(); }, 1850);
+                    setTimeout(async () =>  { await sound2     .playAsync(); }, 2700);
+                    setTimeout(async () =>  { await soundQuay  .playAsync(); }, 3700);
+                    setTimeout(async () =>  { await this.setState({ isAudioPlaying: false }); }, 3700);
+
+                    await console.log("Sound played");
+                } catch (error) {
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+            } else {
+                var soundDefault = new Audio.Sound();
+                try {
+                    // Play sound 1
+                    await soundDefault.loadAsync(require("../assets/sounds/default-voice.mp3"));
+                    await soundDefault.playAsync();
+
+                    setTimeout(async () => { await this.setState({ isAudioPlaying: false }); }, 3000);
+
+                    await console.log("Sound played");
+                } catch (error) {
+                    console.log("ERROR: ");
+                    console.log(error);
+                }
+
+                console.log("Khong hop le!");
+            }
+        }
+    }
+
     updateHelpdeskStatus(id, soquay) {
         console.log(console.log("HELPDESK - UPDATE_HELPDESK_STATUS !!"));
-
-        var formData = new FormData();
-        formData.append('id', id);
-        formData.append('soquay', soquay);
-        formData.append('trangthai', 1);
+        console.log("-id",id);
+        console.log("-soquay",soquay);
 
         fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_UPDATE_HELPDESK_STATUS, {
             method: "POST",
-            body: formData
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: UpdateHelpdeskStatus(id, soquay, 1)
         })
             .then((response) => {
-                console.log(response.json);
-                if (response._bodyText == 'OK!') {
+                console.log("======== RESPONE", response._bodyText);
+                if (response._bodyText == '"OK"') {
                     // Reload Heldesk
                     this.loadHelpdesk();
                 } else {
@@ -99,7 +166,13 @@ class Helpdesk extends Component {
 
     loadHelpdesk() {
         console.log('-- load helpdesk');
-        fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_GET_HELPDESK_AND_CUSTOMER)
+        fetch(Config.SERVICE_HOST + ":" + Config.SERVICE_PORT + Config.PATH_GET_HELPDESK_AND_CUSTOMER, {
+            method: "POST",
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+        })
             .then((response) => response.json())
             .then((responseJson) => {
                 console.log(responseJson);
@@ -117,9 +190,7 @@ class Helpdesk extends Component {
             })
             .catch(err => {
                 console.log(err)
-                this.setState({
-                    refreshing: false
-                });
+                this.setState({ refreshing: false });
             });
     }
 
@@ -129,11 +200,7 @@ class Helpdesk extends Component {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flexGrow: 1,
-        alignItems: 'center',
-        backgroundColor: '#CCE0EF',
-    },
+    container: { flexGrow: 1, alignItems: 'center', backgroundColor: '#CCE0EF' },
     vTitle: {
         backgroundColor: "#0063B0",
         height: 40,
@@ -144,29 +211,10 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.8,
         shadowRadius: 3,
     },
-    vTitleText: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        paddingLeft: (width / 9) + 5
-    },
-    vTitleIcon: {
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: '#3480BF',
-        width: width / 9,
-        marginRight: 5
-    },
-    title: {
-        color: "white",
-        fontSize: 20
-    },
-    vList: {
-        flex: 1,
-        width: width,
-        alignItems: "center",
-        justifyContent: "center",
-    },
+    vTitleText: { flex: 1, justifyContent: "center", alignItems: "center", paddingLeft: (width / 9) + 5 },
+    vTitleIcon: { justifyContent: "center", alignItems: "center", backgroundColor: '#3480BF', width: width / 9, marginRight: 5 },
+    title: { color: "white", fontSize: 20 },
+    vList: { flex: 1, width: width, alignItems: "center", justifyContent: "center" },
 });
 
 export default Helpdesk;

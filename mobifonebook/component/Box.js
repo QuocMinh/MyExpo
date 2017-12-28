@@ -18,15 +18,11 @@ class Box extends Component {
         console.log("BOX - TRANGTHAI: " + this.props.trangthai);
 
         return (
-            // <TouchableOpacity
-            //     onLongPress={() => this.updateStatus()}
-            // >
-                <View style={[styles.vBox, this.colorStatus()]}>
-                    <Text style={{ fontSize: 18, marginBottom: 5, color: "#00579c", fontWeight: "bold" }}>QUẦY {this.props.soquay}</Text>
-                    <Text style={styles.stt}>STT: {this.props.stt}</Text>
-                    <Text>{this.checkStatus()}</Text>
-                </View>
-            // </TouchableOpacity>
+            <View style={[styles.vBox, this.colorStatus()]}>
+                <Text style={{ fontSize: 18, marginBottom: 5, color: "#00579c", fontWeight: "bold" }}>QUẦY {this.props.soquay}</Text>
+                <Text style={styles.stt}>STT: {this.props.stt}</Text>
+                <Text>{this.checkStatus()}</Text>
+            </View>
         );
     }
 

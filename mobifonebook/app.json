@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobifonebook",
-    "description": "An empty new project",
+    "name": "Mobifone Book",
+    "description": "Ung dung dat so",
     "slug": "mobifonebook",
     "privacy": "public",
     "sdkVersion": "22.0.0",
@@ -18,7 +18,11 @@
       "assetExts": ["ttf", "mp4"]
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "minh.mobifone.mobifonebook"
+    },
+    "android": {
+      "package": "minh.mobifone.mobifonebook"
     }
   }
 }
